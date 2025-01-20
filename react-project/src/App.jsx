@@ -1,24 +1,43 @@
-import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom"; // Corrected import path
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Info from "./pages/Info";
-import Contatcs from "./pages/Contacts";
+import Contacts from "./pages/Contacts";
+import Details from "./pages/Detail";
+import Login from "./Login";
+import { AuthProvider, useAuth } from "./components/AuthContext";  
 
 function App() {
   return (
-    <BrowserRouter>
-      {/* Navbar needs to be inside the Router context */}
-      <Navbar />
-      
-      {/* Define the routes inside the Router */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/info" element={<Info />} />
-        <Route path="/contacts" element={<Contatcs />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
+}
+
+function AppRoutes() {
+  const location = useLocation();  
+
+  return (
+    <>
+      {location.pathname !== "/" && <Navbar />} 
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/home" element={<PrivateRoute component={Home} />} />
+        <Route path="/info" element={<PrivateRoute component={Info} />} />
+        <Route path="/contacts" element={<PrivateRoute component={Contacts} />} />
+        <Route path="/details/:id" element={<PrivateRoute component={Details} />} />
+      </Routes>
+    </>
+  );
+}
+
+function PrivateRoute({ component: Component }) {
+  const { isAuthenticated } = useAuth();
+  
+  return isAuthenticated ? <Component /> : <Login />;
 }
 
 export default App;
